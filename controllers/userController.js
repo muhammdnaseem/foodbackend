@@ -51,7 +51,9 @@ const registerUser = async (req, res) => {
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const verificationToken = crypto.randomBytes(20).toString('hex');
+        // Generate 6-digit OTP
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString(); 
+const verificationToken = generateOTP(); // OTP as a string
 
         // Create new user
         const newUser = new userModel({
@@ -82,7 +84,7 @@ const registerUser = async (req, res) => {
 
 // Send verification email
 const sendVerificationEmail = async (email, verificationToken) => {
-    const verificationUrl = `http://localhost:5173/verify?token=${verificationToken}`;
+    const verificationUrl = `https://localhost:5173/verify?token=${verificationToken}`;
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -123,7 +125,7 @@ const forgotPassword = async (req, res) => {
         await user.save();
 
         const resetUrl = `http://localhost:5173/resetpassword?token=${resetToken}`;
-        await sendVerificationEmail(email, resetUrl);
+        await sendVerificationEmail(email, resetPasswordToken);
 
         res.status(200).json({ success: true, message: 'Reset link sent to your email!' });
     } catch (error) {
@@ -156,7 +158,7 @@ const resetPassword = async (req, res) => {
     }
 };
 
-// Get user details
+
 // Get user details
 const userDetails = async (req, res) => {
     try {
