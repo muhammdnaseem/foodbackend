@@ -18,8 +18,8 @@ const userSchema = new mongoose.Schema({
     },
     verificationToken: String,
     verificationTokenExpiresAt: Date,
-    resetPasswordLink: String,
-    resetPasswordLinkExpiresAt: Date,
+    resetPasswordToken: String,
+    resetPasswordExpiresAt: Date,
 },{minimize:false})
 
 const userModel = mongoose.model.user || mongoose.model("user", userSchema);
