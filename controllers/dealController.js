@@ -1,5 +1,6 @@
 import fs from 'fs'
 import dealModel from '../models/dealModel.js'
+import foodModel from '../models/foodModel.js'
 
 //add food item
 
@@ -30,8 +31,8 @@ const listDeal = async (req, res) => {
     try {
       const deals = await dealModel.find({})
         .populate({
-          path: 'food', // Assuming 'dealproduct' references another collection
-          select: 'name image sizes', // Select relevant fields
+          path: 'dealproduct', 
+          select: 'name image sizes', 
         });
   
       // Extract the price from the populated 'sizes' array
