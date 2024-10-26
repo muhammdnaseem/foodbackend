@@ -8,7 +8,8 @@ import {
     userDetails,
     userUpdate,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    VerifyToken
 } from '../controllers/userController.js';
 import authMiddleware from './../middleware/auth.js';
 import passport from 'passport';
@@ -18,6 +19,8 @@ const userRouter = express.Router();
 // Register and Login routes
 userRouter.post('/register', registerUser);
 userRouter.post('/login', loginUser);
+userRouter.post('/verify-token', VerifyToken);
+
 
 // Google authentication routes
 userRouter.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] })); // Request profile and email scopes

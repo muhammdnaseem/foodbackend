@@ -83,8 +83,8 @@ const verificationToken = generateOTP(); // OTP as a string
 
 
 // Send verification email
-const sendVerificationEmail = async (email, verificationToken) => {
-    const verificationUrl = `https://localhost:5173/verify?token=${verificationToken}`;
+const sendVerificationEmail = async (email, verificationToken, isPasswordReset = false) => {
+    const verificationUrl = `http://localhost:5174/reset-password?token=${verificationToken}`;
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -96,12 +96,26 @@ const sendVerificationEmail = async (email, verificationToken) => {
             },
         });
 
+        let subject, text, html;
+
+        if (isPasswordReset) {
+            // For password reset, send the link
+            subject = 'Password Reset';
+            text = `Please reset your password by clicking the following link: ${verificationUrl}`;
+            html = `<p> <a href="${verificationUrl}">${verificationUrl}</a></p>`;
+        } else {
+            // For OTP verification, send just the OTP in text
+            subject = 'Email Verification - OTP';
+            text = `Your OTP for email verification is: ${verificationToken}`;
+            html = `<p> <strong>${verificationToken}</strong></p>`;
+        }
+
         const mailOptions = {
-            from: `"Your App" <${process.env.EMAIL_USER}>`,
+            from: `"Henn Bun" <${process.env.EMAIL_USER}>`,
             to: email,
-            subject: 'Email Verification',
-            text: `Please verify your email by clicking the following link: ${verificationUrl}`,
-            html: `<p>Please verify your email by clicking the following link: <a href="${verificationUrl}">${verificationUrl}</a></p>`,
+            subject,
+            text,
+            html,
         };
 
         await transporter.sendMail(mailOptions);
@@ -134,29 +148,60 @@ const forgotPassword = async (req, res) => {
     }
 };
 
-// Reset password
-const resetPassword = async (req, res) => {
-    const { token, newPassword } = req.body;
+
+const VerifyToken = async (req, res) => {
+    const { token } = req.body;
+
     try {
         const user = await userModel.findOne({
             resetPasswordToken: token,
             resetPasswordExpiresAt: { $gt: Date.now() },
         });
 
-        if (!user) return res.status(400).json({ success: false, message: 'Invalid or expired token' });
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired token' });
+        }
 
+        // Send success response with userId
+        return res.status(200).json({ success: true, userId: user._id });
+    } catch (error) {
+        console.error('Error verifying token:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
+
+
+
+// Reset password
+const resetPassword = async (req, res) => {
+    const { userId, newPassword } = req.body;
+
+    try {
+        // Find the user by ID
+        const user = await userModel.findById(userId);
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'User not found' });
+        }
+
+        // Generate salt and hash the new password
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
+
+        // Clear the reset token and expiry
         user.resetPasswordToken = undefined;
         user.resetPasswordExpiresAt = undefined;
 
+        // Save the updated user
         await user.save();
+
         res.status(200).json({ success: true, message: 'Password reset successfully' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'Error resetting password' });
+        console.error('Error resetting password:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 };
+
 
 
 // Get user details
@@ -233,7 +278,7 @@ export {
     sendVerificationEmail,
     forgotPassword,
     resetPassword,
-    
+    VerifyToken,
     userDetails,
     userUpdate,
     authGoogle,
