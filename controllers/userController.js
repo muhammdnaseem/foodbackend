@@ -84,7 +84,7 @@ const verificationToken = generateOTP(); // OTP as a string
 
 // Send verification email
 const sendVerificationEmail = async (email, verificationToken, isPasswordReset = false) => {
-    const verificationUrl = `http://localhost:5174/profile?resettoken=${verificationToken}`;
+    const verificationUrl = `https://hennbun.ca/profile?resettoken=${verificationToken}`;
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
