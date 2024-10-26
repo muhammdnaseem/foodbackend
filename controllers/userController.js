@@ -84,7 +84,7 @@ const verificationToken = generateOTP(); // OTP as a string
 
 // Send verification email
 const sendVerificationEmail = async (email, verificationToken, isPasswordReset = false) => {
-    const verificationUrl = `http://localhost:5174/reset-password?token=${verificationToken}`;
+    const verificationUrl = `http://localhost:5174/reset-password?resettoken=${verificationToken}`;
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -150,11 +150,11 @@ const forgotPassword = async (req, res) => {
 
 
 const VerifyToken = async (req, res) => {
-    const { token } = req.body;
+    const { resettoken } = req.body;
 
     try {
         const user = await userModel.findOne({
-            resetPasswordToken: token,
+            resetPasswordToken: resettoken,
             resetPasswordExpiresAt: { $gt: Date.now() },
         });
 
