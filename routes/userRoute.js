@@ -24,10 +24,10 @@ userRouter.post('/verify-token', VerifyToken);
 
 // Google authentication routes
 // Initiate Google login
-router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+userRouter.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 // Google OAuth callback
-router.get('/auth/google/callback', 
+userRouter.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
     // Generate JWT and redirect to frontend with token
