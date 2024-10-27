@@ -23,12 +23,16 @@ userRouter.post('/verify-token', VerifyToken);
 
 
 // Google authentication routes
-userRouter.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] })); // Request profile and email scopes
-userRouter.get('/auth/google/callback', 
+// Initiate Google login
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+// Google OAuth callback
+router.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    // Successful authentication, redirect home.
-    res.redirect(`${process.env.FRONTEND_URL}/`); // Redirect to your frontend URL
+    // Generate JWT and redirect to frontend with token
+    const token = generateJWT(req.user);
+    res.redirect(`http://localhost:5173/auth/google/callback?token=${token}`);
   }
 );
 

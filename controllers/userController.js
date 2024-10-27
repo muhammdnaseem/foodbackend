@@ -251,7 +251,7 @@ const userUpdate = async (req, res) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `http://localhost:5173/auth/google/callback`, // Ensure callback URL matches your frontend
+    callbackURL: `https://foodbackend-production-a94c.up.railway.app/api/user/auth/google/callback`, // Ensure callback URL matches your frontend
   },
   async (accessToken, refreshToken, profile, cb) => {
     try {
@@ -269,7 +269,7 @@ const authGoogle = passport.authenticate('google', { scope: ['profile', 'email']
 
 const googleCallback = passport.authenticate('google', {
     failureRedirect: '/login',
-    successRedirect: '/dashboard',
+    successRedirect: '/',
 });
 
 export {
