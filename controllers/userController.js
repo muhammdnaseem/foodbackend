@@ -255,7 +255,7 @@ passport.use(new GoogleStrategy({
   },
   async (accessToken, refreshToken, profile, cb) => {
     try {
-      const user = await User.findOrCreate({ googleId: profile.id });
+      const user = await userModel.findOrCreate({ googleId: profile.id });
       return cb(null, user);
     } catch (err) {
       return cb(err, null);
