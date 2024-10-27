@@ -268,16 +268,33 @@ passport.use(new GoogleStrategy({
           isVerified: true,
         });
 
-        await user.save(); // Use .save() to trigger the pre-save middleware
+        await user.save(); 
       }
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' } // Set token expiration time
+      );
 
-      return cb(null, user);
+
+      return cb(null, { user, token });
     } catch (err) {
       return cb(err, null);
     }
   }
 ));
 
+
+// Serialize user to session
+passport.serializeUser((user, done) => {
+    done(null, user);
+  });
+  
+  // Deserialize user from session
+  passport.deserializeUser((user, done) => {
+    done(null, user);
+  });
 
 
 // Google authentication routes

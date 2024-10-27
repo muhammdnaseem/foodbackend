@@ -30,8 +30,15 @@ userRouter.get('/auth/google', passport.authenticate('google', { scope: ['profil
 userRouter.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    const token = generateJWT(req.user);
-    res.redirect(`http://localhost:5173/auth/google/callback?token=${token}`);
+   // Extract the token from the request object
+   const { token } = req.user;
+
+   if (token) {
+     // Send the token as a response or store it in cookies/localStorage
+     res.status(200).json({ success: true, token });
+   } else {
+     res.status(401).json({ success: false, message: 'Authentication failed' });
+   }
   }
 );
 
