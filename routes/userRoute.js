@@ -30,11 +30,11 @@ userRouter.get('/auth/google', passport.authenticate('google', { scope: ['profil
 userRouter.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    // Generate JWT and redirect to frontend with token
     const token = generateJWT(req.user);
     res.redirect(`http://localhost:5173/auth/google/callback?token=${token}`);
   }
 );
+
 
 // Email verification
 userRouter.get('/sendEmail', sendVerificationEmail);
