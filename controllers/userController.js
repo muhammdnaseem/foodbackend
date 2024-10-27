@@ -252,21 +252,25 @@ const userUpdate = async (req, res) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `https://foodbackend-production-a94c.up.railway.app/api/user/auth/google/callback`,
+    callbackURL: `https://foodbackend-production-a94c.up.railway.app/api/user/auth/google/callback`, // Ensure callback URL matches your frontend
   },
   async (accessToken, refreshToken, profile, cb) => {
     try {
-      let user = await userModel.findOne({ googleId: profile.id });
-      if (!user) {
-        user = await userModel.create({ googleId: profile.id, email: profile.emails[0].value });
-      }
+        let user = await userModel.findOne({ googleId: profile.id });
+        if (!user) {
+            user = await userModel.create({
+                googleId: profile.id,
+                name: profile.displayName,
+                email: profile.emails[0].value,
+                isVerified: true, // Mark Google users as verified
+              });
+        }
       return cb(null, user);
     } catch (err) {
       return cb(err, null);
     }
   }
 ));
-
 
 
 // Google authentication routes
