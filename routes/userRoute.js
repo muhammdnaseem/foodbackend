@@ -28,7 +28,7 @@ userRouter.get('/auth/google', passport.authenticate('google', { scope: ['profil
 
 
 // Google callback route
-router.get(
+userRouter.get(
   '/auth/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
   (req, res) => {
