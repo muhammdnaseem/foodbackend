@@ -245,23 +245,28 @@ const userUpdate = async (req, res) => {
 };
 
 
-// passport.js
 
+
+// passport.js
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `https://foodbackend-production-a94c.up.railway.app/api/user/auth/google/callback`, // Ensure callback URL matches your frontend
+    callbackURL: `https://foodbackend-production-a94c.up.railway.app/api/user/auth/google/callback`,
   },
   async (accessToken, refreshToken, profile, cb) => {
     try {
-      const user = await userModel.findOrCreate({ googleId: profile.id });
+      let user = await userModel.findOne({ googleId: profile.id });
+      if (!user) {
+        user = await userModel.create({ googleId: profile.id, email: profile.emails[0].value });
+      }
       return cb(null, user);
     } catch (err) {
       return cb(err, null);
     }
   }
 ));
+
 
 
 // Google authentication routes
