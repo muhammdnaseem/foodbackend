@@ -37,41 +37,54 @@ const loginUser = async (req, res) => {
 // Register user
 // Register user
 const registerUser = async (req, res) => {
-    const { name, password, email } = req.body;
+    const { name, password, email, otp } = req.body;
 
     try {
-        // Check if user already exists
-        if (await userModel.findOne({ email })) {
-            return res.status(409).json({ success: false, message: 'User already exists' });
-        }
 
-        // Validate email and password
+        // Find the user by email
+        const user = await userModel.findOne({ email });
         if (!validator.isEmail(email)) return res.status(400).json({ success: false, message: 'Invalid email' });
         if (password.length < 8) return res.status(400).json({ success: false, message: 'Password too short' });
 
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        // Generate 6-digit OTP
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString(); 
-const verificationToken = generateOTP(); // OTP as a string
+   
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
 
-        // Create new user
-        const newUser = new userModel({
-            name,
-            email,
-            password: hashedPassword,
-            verificationToken,
-            verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
-        });
+        // Check if the OTP is correct and has not expired
+        if (user.verificationToken !== otp) {
+            return res.status(400).json({ success: false, message: 'Invalid OTP' });
+        }
 
-        // Save user to the database
-        await newUser.save();
+        // Check if the verification token has expired
+        if (user.verificationTokenExpiresAt < Date.now()) {
+            return res.status(400).json({ success: false, message: 'OTP has expired' });
+        }
+        
+       
+
+// Mark the user as verified
+user.name = name;
+user.password = hashedPassword;
+user.isVerified = true;
+user.verificationToken = null; 
+user.verificationTokenExpiresAt = null; 
+
+// Save the updated user
+await user.save();
+
+
+        
+
+        
 
         // Send verification email
-        sendVerificationEmail(email, verificationToken).catch(error => {
-            console.error('Error sending verification email:', error);
-        });
+        // sendVerificationEmail(email, verificationToken).catch(error => {
+        //     console.error('Error sending verification email:', error);
+        // });
 
         // Create JWT token and return response
         const token = createToken(newUser._id);
@@ -85,11 +98,23 @@ const verificationToken = generateOTP(); // OTP as a string
 
 const sendDirectVerificationEmail = async (req, res) => {
     const { email } = req.body;
+     
+     if (await userModel.findOne({ email })) {
+        return res.status(409).json({ success: false, message: 'User already exists' });
+    }
     if (!email) {
         return res.status(400).json({ success: false, message: 'Email is required' });
     }
     const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString(); 
     const verificationToken = generateOTP(); // Generate the OTP
+
+    // Create new user
+    const newUser = new userModel({
+        email,
+        verificationToken,
+        verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
+    });
+    await newUser.save();
 
     try {
         await sendVerificationEmail(email, verificationToken);
