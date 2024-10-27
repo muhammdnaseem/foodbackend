@@ -52,7 +52,7 @@ userRouter.get(
 
 
 
-userRouter.get('/sendEmail', sendDirectVerificationEmail);
+userRouter.post('/sendEmail', sendDirectVerificationEmail);
 
 
 
