@@ -8,7 +8,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config();
-const router = express.Router();
+
 
 
 // Create JWT token
