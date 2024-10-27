@@ -22,23 +22,31 @@ userRouter.post('/login', loginUser);
 userRouter.post('/verify-token', VerifyToken);
 
 
-// Google authentication routes
+
 // Initiate Google login
 userRouter.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// Google OAuth callback
-userRouter.get('/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-   // Extract the token from the request object
-   const { token } = req.user;
 
-   if (token) {
-     // Send the token as a response or store it in cookies/localStorage
-     res.status(200).json({ success: true, token });
-   } else {
-     res.status(401).json({ success: false, message: 'Authentication failed' });
-   }
+// Google callback route
+router.get(
+  '/auth/google/callback',
+  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+  (req, res) => {
+    const user = req.user;
+    
+    if (user) {
+      // Generate a JWT token
+      const token = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      // Send the token as a JSON response
+      res.status(200).json({ success: true, token });
+    } else {
+      res.status(401).json({ success: false, message: 'Authentication failed' });
+    }
   }
 );
 
