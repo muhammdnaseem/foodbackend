@@ -4,7 +4,7 @@ import {
     registerUser,
     authGoogle,
     googleCallback,
-    sendVerificationEmail,
+    sendDirectVerificationEmail,
     userDetails,
     userUpdate,
     forgotPassword,
@@ -51,8 +51,11 @@ userRouter.get(
 );
 
 
-// Email verification
-userRouter.get('/sendEmail', sendVerificationEmail);
+
+userRouter.get('/sendEmail', sendDirectVerificationEmail);
+
+
+
 
 // Forgot and Reset Password
 userRouter.post('/forgotpassword', forgotPassword);

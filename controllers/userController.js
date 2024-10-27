@@ -8,6 +8,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config();
+const router = express.Router();
 
 
 // Create JWT token
@@ -78,6 +79,23 @@ const verificationToken = generateOTP(); // OTP as a string
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Error registering user' });
+    }
+};
+
+
+const sendDirectVerificationEmail = async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const verificationToken = generateOTP(); // Generate the OTP
+
+    try {
+        await sendVerificationEmail(email, verificationToken);
+        res.json({ success: true, message: 'OTP sent successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error sending OTP' });
     }
 };
 
@@ -308,7 +326,7 @@ const googleCallback = passport.authenticate('google', {
 export {
     loginUser,
     registerUser,
-    sendVerificationEmail,
+    sendDirectVerificationEmail,
     forgotPassword,
     resetPassword,
     VerifyToken,
