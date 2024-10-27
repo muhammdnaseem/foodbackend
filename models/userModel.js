@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 // Define the user schema
 const userSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    name: { type: String, },
     email: { type: String, required: true, unique: true },
     mobile: { type: String },
     password: { type: String }, // Password is no longer directly required here
