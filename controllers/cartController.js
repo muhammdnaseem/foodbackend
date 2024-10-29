@@ -101,10 +101,7 @@ const updateCart = async (req, res) => {
         const oldItemKey = `${itemId}-${oldSize}`;
         const newItemKey = `${itemId}-${newSize}`;
 
-        console.log(oldItemKey);
-        console.log(newItemKey);
-        console.log(oldSize);
-        console.log(newSize);
+      
 
 
         // If the old size exists, move the quantity to the new size
@@ -123,7 +120,7 @@ const updateCart = async (req, res) => {
 
         // Update the user's cart in the database
         await userModel.findByIdAndUpdate(userId, { cartData });
-        
+        console.log(cartData);
         res.json({ success: true, message: 'Cart updated successfully' });
     } catch (error) {
         console.error("Error updating cart:", error);
