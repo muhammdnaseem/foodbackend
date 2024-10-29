@@ -5,6 +5,7 @@ import validator from 'validator';
 import nodemailer from 'nodemailer';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import FacebookStrategy from 'passport-facebook';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -116,12 +117,9 @@ const sendDirectVerificationEmail = async (req, res) => {
     });
     await newUser.save();
 
-    try {
+  
         await sendVerificationEmail(email, verificationToken);
-        res.json({ success: true, message: 'OTP sent successfully' });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Error sending OTP' });
-    }
+    
 };
 
 
@@ -328,6 +326,45 @@ passport.use(new GoogleStrategy({
   }
 ));
 
+// Facebook authentication strategy
+passport.use(new FacebookStrategy({
+    clientID: process.env.FACEBOOK_APP_ID,  // Your Facebook App ID
+    clientSecret: process.env.FACEBOOK_APP_SECRET,  // Your Facebook App Secret
+    callbackURL: `https://foodbackend-production-a94c.up.railway.app/api/user/auth/facebook/callback`, // Your callback URL
+    profileFields: ['id', 'emails', 'name']  // Fields to retrieve from Facebook
+  },
+  async (accessToken, refreshToken, profile, cb) => {
+    try {
+      // Check if the user already exists by email
+      let user = await userModel.findOne({ email: profile.emails[0].value });
+
+      if (!user) {
+        // Create a new user if not found
+        user = new userModel({
+          facebookId: profile.id,
+          name: profile.displayName,
+          email: profile.emails[0].value,
+          isVerified: true,
+        });
+
+        await user.save(); 
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' } // Set token expiration time
+      );
+
+      return cb(null, { user, token });
+    } catch (err) {
+      return cb(err, null);
+    }
+  }
+));
+
+
 
 // Serialize user to session
 passport.serializeUser((user, done) => {
@@ -348,6 +385,13 @@ const googleCallback = passport.authenticate('google', {
     successRedirect: '/',
 });
 
+// Facebook authentication routes
+const authFacebook = passport.authenticate('facebook', { scope: ['email'] });
+const facebookCallback = passport.authenticate('facebook', {
+    failureRedirect: '/login',
+    successRedirect: '/',
+});
+
 export {
     loginUser,
     registerUser,
@@ -359,4 +403,6 @@ export {
     userUpdate,
     authGoogle,
     googleCallback,
+    authFacebook,
+    facebookCallback,
 };

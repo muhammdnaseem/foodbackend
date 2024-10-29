@@ -4,6 +4,8 @@ import {
     registerUser,
     authGoogle,
     googleCallback,
+    authFacebook, 
+    facebookCallback,
     sendDirectVerificationEmail,
     userDetails,
     userUpdate,
@@ -49,6 +51,10 @@ userRouter.get(
     }
   }
 );
+
+// Facebook routes
+app.get('/auth/facebook', authFacebook); // Initiates Facebook login
+app.get('/auth/facebook/callback', facebookCallback); // Handles Facebook callback
 
 
 
