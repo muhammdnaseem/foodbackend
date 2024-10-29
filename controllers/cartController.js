@@ -96,6 +96,9 @@ const updateCart = async (req, res) => {
         // Fetch the user's data
         let userData = await userModel.findById(userId);
         let cartData = userData.cartData;
+        console.log(cartData);
+        console.log(oldSize);
+        console.log(newSize);
 
         // Build keys for the old and new sizes
         const oldItemKey = `${itemId}-${oldSize}`;
@@ -113,7 +116,6 @@ const updateCart = async (req, res) => {
 
             // Add the quantity to the new size
             cartData[newItemKey] = (cartData[newItemKey] || 0) + quantity;
-           
         }
 
        
