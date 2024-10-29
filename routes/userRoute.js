@@ -52,10 +52,32 @@ userRouter.get(
   }
 );
 
-// Facebook routes
-userRouter.get('/auth/facebook', authFacebook); // Initiates Facebook login
-userRouter.get('/auth/facebook/callback', facebookCallback); // Handles Facebook callback
+// Initiate Facebook login
+userRouter.get('/auth/facebook', passport.authenticate('facebook', { scope: 'email' }));
 
+
+// Google callback route
+userRouter.get(
+  '/auth/facebook/callback',
+  passport.authenticate('facebook', { session: false, failureRedirect: '/login' }),
+  (req, res) => {
+    const user = req.user;
+    
+    if (user) {
+      // Generate a JWT token
+      const token = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      // Send the token as a JSON response
+      res.status(200).json({ success: true, token });
+    } else {
+      res.status(401).json({ success: false, message: 'Authentication failed' });
+    }
+  }
+);
 
 
 userRouter.post('/sendEmail', sendDirectVerificationEmail);
