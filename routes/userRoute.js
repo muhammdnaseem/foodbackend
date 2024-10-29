@@ -26,7 +26,7 @@ userRouter.post('/verify-token', VerifyToken);
 
 
 // Initiate Google login
-userRouter.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+userRouter.get('/auth/google', authGoogle);
 
 
 // Google callback route
