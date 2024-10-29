@@ -5,8 +5,8 @@ const userSchema = new mongoose.Schema({
     name: { type: String, },
     email: { type: String, required: true, unique: true },
     mobile: { type: String },
-    password: { type: String }, // Password is no longer directly required here
-    googleId: { type: String }, // Store Google ID for OAuth users
+    password: { type: String },
+    googleId: { type: String }, 
     cartData: {
         type: Object,
         default: {
