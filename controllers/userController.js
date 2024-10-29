@@ -302,14 +302,16 @@ passport.use(new GoogleStrategy({
         await user.save(); 
       }
       // Generate JWT token
-      const token = jwt.sign(
-        { userId: user._id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' } // Set token expiration time
-      );
+    //   const token = jwt.sign(
+    //     { userId: user._id, email: user.email },
+    //     process.env.JWT_SECRET,
+    //     { expiresIn: '1h' } // Set token expiration time
+    //   );
 
+      const token = createToken(user._id);
 
-      return cb(null, { user, token });
+      res.status(200).json({ success: true, message: 'Login successful', token });
+    //   return (null, { user, token });
     } catch (err) {
       return cb(err, null);
     }
