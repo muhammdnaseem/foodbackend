@@ -67,7 +67,6 @@ const registerUser = async (req, res) => {
         
        
 
-// Mark the user as verified
 user.name = name;
 user.password = hashedPassword;
 user.isVerified = true;
@@ -79,16 +78,7 @@ await user.save();
 
 
         
-
-        
-
-        // Send verification email
-        // sendVerificationEmail(email, verificationToken).catch(error => {
-        //     console.error('Error sending verification email:', error);
-        // });
-
-        // Create JWT token and return response
-        const token = createToken(newUser._id);
+        const token = createToken(user._id);
         res.status(201).json({ success: true, message: 'Registration successful. Please verify your email.', token });
     } catch (error) {
         console.error(error);
