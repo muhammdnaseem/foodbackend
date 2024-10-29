@@ -107,24 +107,24 @@ const updateCart = async (req, res) => {
       
 
 
-        // If the old size exists, move the quantity to the new size
-        // if (cartData[oldItemKey]) {
-        //     const quantity = cartData[oldItemKey];
-         
-        //     // Remove the old size from the cart
-        //     delete cartData[oldItemKey];
-
-        //     // Add the quantity to the new size
-        //     cartData[newItemKey] = (cartData[newItemKey] || 0) + quantity;
-        // }
-
-        const quantity = cartData[oldItemKey];
-         
-        // Remove the old size from the cart
-        delete cartData[oldItemKey];
-
-        // Add the quantity to the new size
-        cartData[newItemKey] = (cartData[newItemKey] || 0) + quantity;
+        if (cartData.selectedSizes[oldItemKey]) {
+            // Get the existing item quantity from items if necessary
+            const quantity = cartData.items[oldItemKey] || 0; // Only use this if you need to adjust the quantity
+        
+            // Remove the old size entry from selectedSizes
+            delete cartData.selectedSizes[oldItemKey];
+        
+            // Update or add the new size in selectedSizes
+            cartData.selectedSizes[newItemKey] = {
+                size: newSize,
+                price: cartData.selectedSizes[oldItemKey]?.price || 0, // Keep the same price or set a default
+                _id: cartData.selectedSizes[oldItemKey]?._id || newIdFunction() // Set new ID logic as needed
+            };
+        
+            console.log(`Updated selectedSizes: Moved from ${oldItemKey} to ${newItemKey}`);
+        } else {
+            console.log(`Old item key ${oldItemKey} does not exist in selectedSizes`);
+        }
 
        
 
