@@ -101,18 +101,22 @@ const updateCart = async (req, res) => {
         const oldItemKey = `${itemId}-${oldSize}`;
         const newItemKey = `${itemId}-${newSize}`;
 
-        
+        console.log(oldItemKey);
+        console.log(newItemKey);
+        console.log(oldSize);
+        console.log(newSize);
+
 
         // If the old size exists, move the quantity to the new size
         if (cartData[oldItemKey]) {
             const quantity = cartData[oldItemKey];
-            console.log(cartData[oldItemKey]);
+         
             // Remove the old size from the cart
             delete cartData[oldItemKey];
 
             // Add the quantity to the new size
             cartData[newItemKey] = (cartData[newItemKey] || 0) + quantity;
-            console.log(cartData[newItemKey]);
+           
         }
 
        
