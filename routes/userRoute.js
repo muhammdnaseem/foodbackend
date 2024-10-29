@@ -53,8 +53,8 @@ userRouter.get(
 );
 
 // Facebook routes
-app.get('/auth/facebook', authFacebook); // Initiates Facebook login
-app.get('/auth/facebook/callback', facebookCallback); // Handles Facebook callback
+userRouter.get('/auth/facebook', authFacebook); // Initiates Facebook login
+userRouter.get('/auth/facebook/callback', facebookCallback); // Handles Facebook callback
 
 
 
