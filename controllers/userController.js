@@ -283,7 +283,7 @@ const userUpdate = async (req, res) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `https://foodbackend-production-a94c.up.railway.app/api/user/auth/google/callback`,
+    callbackURL: process.env.FRONTEND_URL,
   },
   async (accessToken, refreshToken, profile, cb) => {
     try {
@@ -301,13 +301,6 @@ passport.use(new GoogleStrategy({
 
         await user.save(); 
       }
-      // Generate JWT token
-    //   const token = jwt.sign(
-    //     { userId: user._id, email: user.email },
-    //     process.env.JWT_SECRET,
-    //     { expiresIn: '1h' } // Set token expiration time
-    //   );
-
       const token = createToken(user._id);
 
       res.status(200).json({ success: true, message: 'Login successful', token });
