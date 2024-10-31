@@ -29,28 +29,26 @@ userRouter.post('/verify-token', VerifyToken);
 userRouter.get('/auth/google', authGoogle);
 
 
-// Google callback route
 userRouter.get(
   '/auth/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
   (req, res) => {
     const user = req.user;
-    console.log(user);
     if (user) {
-      // Generate a JWT token
       const token = jwt.sign(
         { userId: user._id, email: user.email },
         process.env.JWT_SECRET,
         { expiresIn: '24h' }
       );
 
-      // Send the token as a JSON response
-      res.status(200).json({ success: true, token });
+      // Redirect with token as a query parameter
+      res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
     } else {
-      res.status(401).json({ success: false, message: 'Authentication failed' });
+      res.redirect(`${process.env.FRONTEND_URL}/login?error=authentication_failed`);
     }
   }
 );
+
 
 // Initiate Facebook login
 userRouter.get('/auth/facebook', passport.authenticate('facebook', { scope: 'email' }));
