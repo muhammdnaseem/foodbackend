@@ -29,25 +29,25 @@ userRouter.post('/verify-token', VerifyToken);
 userRouter.get('/auth/google', authGoogle);
 
 
-userRouter.get(
-  '/auth/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
-  (req, res) => {
-    const user = req.user;
-    if (user) {
-      const token = jwt.sign(
-        { userId: user._id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
-      );
+// userRouter.get(
+//   '/auth/google/callback',
+//   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+//   (req, res) => {
+//     const user = req.user;
+//     if (user) {
+//       const token = jwt.sign(
+//         { userId: user._id, email: user.email },
+//         process.env.JWT_SECRET,
+//         { expiresIn: '24h' }
+//       );
 
-      // Redirect with token as a query parameter
-      res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
-    } else {
-      res.redirect(`${process.env.FRONTEND_URL}/login?error=authentication_failed`);
-    }
-  }
-);
+//       // Redirect with token as a query parameter
+//       res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
+//     } else {
+//       res.redirect(`${process.env.FRONTEND_URL}/login?error=authentication_failed`);
+//     }
+//   }
+// );
 
 
 // Initiate Facebook login
