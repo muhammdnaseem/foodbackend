@@ -1,4 +1,7 @@
 import express from 'express';
+import axios from 'axios';
+import userModel from "../models/userModel.js";
+import jwt from 'jsonwebtoken';
 import {
     loginUser,
     registerUser,
@@ -25,57 +28,97 @@ userRouter.post('/verify-token', VerifyToken);
 
 
 
-// Initiate Google login
-userRouter.get('/auth/google', authGoogle);
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const REDIRECT_URI = `https://foodbackend-production-a94c.up.railway.app/api/user/auth/google/callback`;
 
+// Initiates the Google Login flow
+userRouter.get('/auth/google', (req, res) => {
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=profile email`;
+  res.redirect(url);
+});
+userRouter.get('/auth/google/callback', async (req, res) => {
+  const { code } = req.query;
 
-// userRouter.get(
-//   '/auth/google/callback',
-//   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
-//   (req, res) => {
-//     const user = req.user;
-//     if (user) {
-//       const token = jwt.sign(
-//         { userId: user._id, email: user.email },
-//         process.env.JWT_SECRET,
-//         { expiresIn: '24h' }
-//       );
+  try {
+    // Exchange authorization code for access token
+    const { data } = await axios.post('https://oauth2.googleapis.com/token', {
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
+      code,
+      redirect_uri: REDIRECT_URI,
+      grant_type: 'authorization_code',
+    });
 
-//       // Redirect with token as a query parameter
-//       res.redirect(`${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`);
-//     } else {
-//       res.redirect(`${process.env.FRONTEND_URL}/login?error=authentication_failed`);
-//     }
-//   }
-// );
+    const { access_token } = data;
 
+    // Use access_token to fetch user profile
+    const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
 
-// Initiate Facebook login
-userRouter.get('/auth/facebook', passport.authenticate('facebook', { scope: 'email' }));
+    // Check if the user already exists in the database
+    let existingUser = await userModel.findOne({ googleId: profile.id });
 
-
-// Google callback route
-userRouter.get(
-  '/auth/facebook/callback',
-  passport.authenticate('facebook', { session: false, failureRedirect: '/login' }),
-  (req, res) => {
-    const user = req.user;
-    
-    if (user) {
-      // Generate a JWT token
-      const token = jwt.sign(
-        { userId: user._id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
-      );
-
-      // Send the token as a JSON response
-      res.status(200).json({ success: true, token });
-    } else {
-      res.status(401).json({ success: false, message: 'Authentication failed' });
+    if (!existingUser) {
+      // Create a new user
+      existingUser = new userModel({
+        googleId: profile.id,
+        email: profile.email,
+        name: profile.name,
+        picture: profile.picture,
+      });
+      await existingUser.save();
     }
+
+    // Generate a JWT token
+    
+    // Generate a JWT token
+    const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+
+    // Redirect to the frontend with the token
+    const frontendUrl = `https://hennbun.ca/auth/google/callback?token=${token}`;
+    res.redirect(frontendUrl);
+  } catch (error) {
+    const errorMessage = error.response && error.response.data ? error.response.data.error : error.message;
+    console.error('Error:', errorMessage);
+    res.redirect('/login');
   }
-);
+});
+
+
+const APP_ID = process.env.FACEBOOK_APP_ID;
+const APP_SECRET = process.env.FACEBOOK_APP_SECRET;
+const REDIRECT_URIF = 'https://foodbackend-production-a94c.up.railway.app/api/user/auth/facebook/callback';
+
+// Initiates the Facebook Login flow
+userRouter.get('/auth/facebook', (req, res) => {
+  const url = `https://www.facebook.com/v13.0/dialog/oauth?client_id=${APP_ID}&redirect_uri=${REDIRECT_URIF}&scope=email`;
+  res.redirect(url);
+});
+
+// Callback URL for handling the Facebook Login response
+userRouter.get('/auth/facebook/callback', async (req, res) => {
+  const { code } = req.query;
+
+  try {
+    // Exchange authorization code for access token
+    const { data } = await axios.get(`https://graph.facebook.com/v13.0/oauth/access_token?client_id=${APP_ID}&client_secret=${APP_SECRET}&code=${code}&redirect_uri=${REDIRECT_URI}`);
+
+    const { access_token } = data;
+
+    // Use access_token to fetch user profile
+    const { data: profile } = await axios.get(`https://graph.facebook.com/v13.0/me?fields=name,email&access_token=${access_token}`);
+
+    // Code to handle user authentication and retrieval using the profile data
+
+    res.redirect('/');
+  } catch (error) {
+    console.error('Error:', error.response.data.error);
+    res.redirect('/login');
+  }
+});
+
 
 
 userRouter.post('/sendEmail', sendDirectVerificationEmail);

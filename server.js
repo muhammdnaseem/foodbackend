@@ -11,6 +11,7 @@ import cartRouter from './routes/cartRoute.js';
 import orderRouter from './routes/orderRoute.js';
 import 'dotenv/config';
 
+
 const app = express();
 const port = process.env.PORT || 4000;  // Define the port properly
 

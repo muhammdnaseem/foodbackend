@@ -277,20 +277,22 @@ const userUpdate = async (req, res) => {
 
 
 
-
-// passport.js
-
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.FRONTEND_URL}/auth/google/callback`,
+    callbackURL: 'http://localhost:4000/auth/google/callback',
   },
   async (accessToken, refreshToken, profile, cb) => {
     try {
-      // Check if the user already exists by email
+      console.log("Google authentication callback triggered"); // Check if callback was hit
+      
+      // Check if user already exists
       let user = await userModel.findOne({ email: profile.emails[0].value });
+      console.log("User lookup completed:", user); // Logs user data if found, otherwise null
 
       if (!user) {
+        console.log("User not found, creating a new user"); // Check if user creation is needed
+        
         // Create a new user if not found
         user = new userModel({
           googleId: profile.id,
@@ -298,18 +300,25 @@ passport.use(new GoogleStrategy({
           email: profile.emails[0].value,
           isVerified: true,
         });
-
-        await user.save(); 
+        
+        await user.save();
+        console.log("New user saved successfully:", user); // Logs the new user data
       }
-      const token = createToken(user._id);
 
-      res.status(200).json({ success: true, message: 'Login successful', token });
-    //   return (null, { user, token });
+      // If user exists or newly created, create a token
+      const token = createToken(user._id);
+      console.log("JWT token created:", token); // Log the generated token
+
+      // Return the user and token directly to stop redirection for debugging
+      cb(null, { user, token });
     } catch (err) {
-      return cb(err, null);
+      console.error("Error during Google authentication:", err); // Log any errors that occur
+      cb(err, null); // Pass error to cb function as expected
     }
   }
 ));
+
+
 
 // Facebook authentication strategy
 passport.use(new FacebookStrategy({
