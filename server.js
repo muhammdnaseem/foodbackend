@@ -24,9 +24,9 @@ app.use(cors());
 const connectionOptions = {
    useNewUrlParser: true, // Use the new URL parser
    useUnifiedTopology: true, // Use the new server discovery and monitoring engine
-  serverSelectionTimeoutMS: 30000, // 30 seconds timeout for MongoDB server selection
-  connectTimeoutMS: 30000, // 30 seconds connection timeout
-  socketTimeoutMS: 45000, // 45 seconds for socket timeout
+  serverSelectionTimeoutMS: 60000, // 30 seconds timeout for MongoDB server selection
+  connectTimeoutMS: 80000, // 30 seconds connection timeout
+  socketTimeoutMS: 95000, // 45 seconds for socket timeout
 };
 // DB Connection
 mongoose.connect(process.env.MONGO_URL, connectionOptions)
