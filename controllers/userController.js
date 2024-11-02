@@ -115,7 +115,7 @@ const sendDirectVerificationEmail = async (req, res) => {
 
 // Send verification email
 const sendVerificationEmail = async (email, verificationToken, isPasswordReset = false) => {
-    const verificationUrl = `https://hennbun.ca/aboutus?resettoken=${verificationToken}`;
+    const verificationUrl = `https://hennbun.ca/reset-password?resettoken=${verificationToken}`;
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -182,15 +182,21 @@ const forgotPassword = async (req, res) => {
 
 const VerifyToken = async (req, res) => {
     const { resettoken } = req.body;
+   
 
     try {
+      
+
         const user = await userModel.findOne({
             resetPasswordToken: resettoken,
-            resetPasswordExpiresAt: { $gt: Date.now() },
         });
-
+        
         if (!user) {
-            return res.status(400).json({ success: false, message: 'Invalid or expired token' });
+            return res.status(400).json({ success: false, message: 'Invalid token' });
+        }
+        
+        if (user.resetPasswordExpiresAt <= Date.now()) {
+            return res.status(400).json({ success: false, message: 'Token has expired' });
         }
 
         // Send success response with userId

@@ -88,55 +88,49 @@ const removeFromCart = async (req, res) => {
 };
 
 // update items to user cart
-// update items in user cart when size is changed
+// Update items in user cart when size is changed
 const updateCart = async (req, res) => {
     try {
         const { userId, itemId, oldSize, newSize } = req.body;
 
         // Fetch the user's data
-        let userData = await userModel.findById(userId);
-        let cartData = userData.cartData;
-        console.log(cartData);
-        console.log(oldSize);
-        console.log(newSize);
+        const userData = await userModel.findById(userId);
+        const cartData = userData.cartData;
+        console.log("Current Cart Data:", cartData);
 
         // Build keys for the old and new sizes
         const oldItemKey = `${itemId}-${oldSize}`;
         const newItemKey = `${itemId}-${newSize}`;
 
-      
-
-
         if (cartData.selectedSizes[oldItemKey]) {
-            // Get the existing item quantity from items if necessary
-            const quantity = cartData.items[oldItemKey] || 0; // Only use this if you need to adjust the quantity
-        
-            // Remove the old size entry from selectedSizes
+            // Remove the old size entry and save the necessary details
+            const existingItem = cartData.selectedSizes[oldItemKey];
             delete cartData.selectedSizes[oldItemKey];
-        
-            // Update or add the new size in selectedSizes
+
+            // Add the new size entry to selectedSizes
             cartData.selectedSizes[newItemKey] = {
                 size: newSize,
-                price: cartData.selectedSizes[oldItemKey]?.price || 0, // Keep the same price or set a default
-                _id: cartData.selectedSizes[oldItemKey]?._id || newIdFunction() // Set new ID logic as needed
+                price: existingItem.price, // Maintain the same price, or update as needed
+                _id: existingItem._id // Keep the same ID if applicable
             };
-        
-            console.log(`Updated selectedSizes: Moved from ${oldItemKey} to ${newItemKey}`);
+
+            // Update or add the quantity in items for newItemKey
+            cartData.items[newItemKey] = (cartData.items[oldItemKey] || 1); 
+            delete cartData.items[oldItemKey]; // Remove old size entry from items
+            console.log(`Updated Cart: Moved from ${oldItemKey} to ${newItemKey}`);
         } else {
             console.log(`Old item key ${oldItemKey} does not exist in selectedSizes`);
         }
 
-       
-
         // Update the user's cart in the database
         await userModel.findByIdAndUpdate(userId, { cartData });
-        console.log(cartData);
-        res.json({ success: true, message: 'Cart updated successfully' });
+        res.json({ success: true, message: 'Cart updated successfully', updatedCart: cartData });
     } catch (error) {
         console.error("Error updating cart:", error);
         res.json({ success: false, message: 'Error updating cart' });
     }
 };
+
 
 
 

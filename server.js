@@ -19,6 +19,15 @@ const port = process.env.PORT || 4000;  // Define the port properly
 app.use(express.json());
 app.use(cors());
 
+
+// Configure connection options
+// const connectionOptions = {
+//   useNewUrlParser: true, // Use the new URL parser
+//   useUnifiedTopology: true, // Use the new server discovery and monitoring engine
+//   serverSelectionTimeoutMS: 30000, // 30 seconds timeout for MongoDB server selection
+//   connectTimeoutMS: 30000, // 30 seconds connection timeout
+//   socketTimeoutMS: 45000, // 45 seconds for socket timeout
+// };
 // DB Connection
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log('Connected to MongoDB'))
