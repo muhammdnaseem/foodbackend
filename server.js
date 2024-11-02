@@ -22,8 +22,8 @@ app.use(cors());
 
 // Configure connection options
 const connectionOptions = {
-  // useNewUrlParser: true, // Use the new URL parser
-  // useUnifiedTopology: true, // Use the new server discovery and monitoring engine
+   useNewUrlParser: true, // Use the new URL parser
+   useUnifiedTopology: true, // Use the new server discovery and monitoring engine
   serverSelectionTimeoutMS: 30000, // 30 seconds timeout for MongoDB server selection
   connectTimeoutMS: 30000, // 30 seconds connection timeout
   socketTimeoutMS: 45000, // 45 seconds for socket timeout
