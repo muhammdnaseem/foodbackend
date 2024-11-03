@@ -115,7 +115,7 @@ const sendDirectVerificationEmail = async (req, res) => {
 
 // Send verification email
 const sendVerificationEmail = async (email, verificationToken, isPasswordReset = false) => {
-    const verificationUrl = `https://hennbun.ca/reset-password?resettoken=${verificationToken}`;
+    const verificationUrl = `${process.env.FRONTEND_URL}/reset-password?resettoken=${verificationToken}`;
     try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
