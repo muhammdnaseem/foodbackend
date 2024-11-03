@@ -4,6 +4,11 @@ const addToCart = async (req, res) => {
     try {
         const { userId, newItem } = req.body; // Get userId and newItem from the request body
 
+        // Validate userId
+        if (!userId) {
+            return res.status(400).json({ success: false, message: 'Invalid userId' });
+        }
+
         // Find the user
         let userData = await userModel.findById(userId);
         if (!userData) {
@@ -15,35 +20,49 @@ const addToCart = async (req, res) => {
         let cartData = userData.cartData || { items: [] };
 
         // Retrieve new item details from newItem object
-        const { itemId, selectedSize, price, extraItem, spicyLevel, addOnItem, drinkItem, specialInstructions, itemQuantity } = newItem || {};
+        const { 
+            itemId, 
+            selectedSize,
+            itemQuantity, 
+            price, 
+            extraItem, 
+            spicyLevel, 
+            addOnItem, 
+            drinkItem, 
+            specialInstructions, 
+        } = newItem || {};
 
         // Validate itemId and selectedSize
-        if (!itemId) {
-            return res.status(400).json({ success: false, message: 'Invalid itemId' });
-        }
-        if (!selectedSize) {
-            return res.status(400).json({ success: false, message: 'Invalid selectedSize' });
+        if (!itemId || !selectedSize) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid ${!itemId ? 'itemId' : 'selectedSize'}`
+            });
         }
 
         // Check if an existing item with the same itemId and selectedSize already exists
-        const existingItemIndex = cartData.items.findIndex(
-            (item) => item.itemId && item.itemId.toString() === itemId && item.selectedSize === selectedSize
-        );
+        // Check if an existing item with the same itemId and selectedSize already exists
+const existingItemIndex = cartData.items.findIndex(
+    (item) => item.itemId && item.itemId.toString() === itemId.toString() && item.selectedSize === selectedSize
+);
+
+      
 
         if (existingItemIndex !== -1) {
-         // If item exists, update only the quantity
-    await userModel.updateOne(
-        { _id: userId, "cartData.items.itemId": itemId },
-        { $set: { "cartData.items.$.itemQuantity": itemQuantity }}
-    );
-    return res.json({ success: true, message: 'Quantity updated' });
+            // If item exists, update only the quantity
+            await userModel.updateOne(
+                { _id: userId, "cartData.items.itemId": itemId, "cartData.items.selectedSize": selectedSize },
+                { $set: { "cartData.items.$.itemQuantity": itemQuantity }}
+            );
+            return res.json({ success: true, message: 'Quantity updated' });
+           
         } else {
             // If item doesn't exist, create a new entry
             const newItemEntry = {
                 itemId,
-                price,
-                itemQuantity,
                 selectedSize,
+                itemQuantity,
+                price,
                 extraItem,
                 spicyLevel,
                 addOnItem,
@@ -51,8 +70,10 @@ const addToCart = async (req, res) => {
                 specialInstructions,
             };
             cartData.items.push(newItemEntry); // Add the new item to the cart
+            
             // Update user's cart data in the database
             await userModel.findByIdAndUpdate(userId, { cartData }, { new: true });
+            console.log("new item");
             return res.json({ success: true, message: 'Added to cart' });
         }
     } catch (error) {
@@ -60,9 +81,6 @@ const addToCart = async (req, res) => {
         res.status(500).json({ success: false, message: 'Error adding to cart' });
     }
 };
-
-
-
 
 
 
