@@ -77,7 +77,7 @@ userRouter.get('/auth/google/callback', async (req, res) => {
     const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
 
     // Redirect to the frontend with the token
-    const frontendUrl = `${process.env.BACKEND_URL}/auth/google/callback?token=${token}`;
+    const frontendUrl = `${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`;
     res.redirect(frontendUrl);
   } catch (error) {
     const errorMessage = error.response && error.response.data ? error.response.data.error : error.message;
