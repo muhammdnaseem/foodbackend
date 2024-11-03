@@ -2,47 +2,68 @@ import userModel from './../models/userModel.js';
 
 const addToCart = async (req, res) => {
     try {
-        const { userId, itemId, selectedSize } = req.body;
-        let userData = await userModel.findById(userId);
+        const { userId, newItem } = req.body; // Get userId and newItem from the request body
 
+        // Find the user
+        let userData = await userModel.findById(userId);
         if (!userData) {
             console.error(`User with ID ${userId} not found.`);
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        let cartData = userData.cartData || { items: {}, selectedSizes: {} };
+        // Initialize cartData if not present
+        let cartData = userData.cartData || { items: [] };
 
+        // Retrieve new item details from newItem object
+        const { itemId, selectedSize, price, extraItem, spicyLevel, addOnItem, drinkItem, specialInstructions } = newItem || {};
+
+        // Validate itemId and selectedSize
         if (!itemId || !selectedSize) {
             console.error('Invalid itemId or selectedSize:', { itemId, selectedSize });
             return res.status(400).json({ success: false, message: 'Invalid itemId or selectedSize' });
         }
 
+        // Check if an existing item with the same itemId and selectedSize already exists
+        const existingItemIndex = cartData.items.findIndex(
+            (item) => item.itemId && item.itemId.toString() === itemId && item.selectedSize === selectedSize
+        );
 
-        cartData.selectedSizes[itemId] = selectedSize;
-
-
-        cartData.items = cartData.items || {};
-
-  
-        const sizeId = selectedSize.id || selectedSize.name || selectedSize; 
-        const itemKey = `${itemId}-${sizeId}`;
-
-
-        if (!cartData.items[itemKey]) {
-            cartData.items[itemKey] = 1; 
+        if (existingItemIndex !== -1) {
+            // If item exists with the same size, update its quantity and details
+            cartData.items[existingItemIndex].itemQuantity += 1; // Increment quantity
+            cartData.items[existingItemIndex].price = price; // Update price
+            cartData.items[existingItemIndex].extraItem = extraItem; // Update extra item
+            cartData.items[existingItemIndex].spicyLevel = spicyLevel; // Update spicy level
+            cartData.items[existingItemIndex].addOnItem = addOnItem; // Update add-on item
+            cartData.items[existingItemIndex].drinkItem = drinkItem; // Update drink item
+            cartData.items[existingItemIndex].specialInstructions = specialInstructions; // Update special instructions
         } else {
-            cartData.items[itemKey] += 1; 
+            // If item doesn't exist or the size is different, create a new entry
+            const newItemEntry = {
+                itemId,
+                price,
+                itemQuantity: 1,
+                selectedSize,
+                extraItem,
+                spicyLevel,
+                addOnItem,
+                drinkItem,
+                specialInstructions,
+            };
+            cartData.items.push(newItemEntry); // Add the new item to the cart
         }
 
-    
+        // Update user's cart data in the database
         await userModel.findByIdAndUpdate(userId, { cartData }, { new: true });
 
         res.json({ success: true, message: 'Added to cart' });
     } catch (error) {
-        console.log(error);
+        console.error('Error adding to cart:', error);
         res.status(500).json({ success: false, message: 'Error adding to cart' });
     }
 };
+
+
 
 
 

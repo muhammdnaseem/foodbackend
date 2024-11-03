@@ -8,11 +8,16 @@ const userSchema = new mongoose.Schema({
     password: { type: String },
     googleId: { type: String }, 
     cartData: {
-        type: Object,
-        default: {
-            items: {},
-            selectedSizes: {},
-        }
+        items: [{
+            itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'food', required: true }, 
+            price: {type: Number, required: true}, 
+            itemQuantity: {type: Number, required: true},
+            selectedSize: { type: String, required: true },  
+            extraItem: { type: mongoose.Schema.Types.ObjectId, ref: 'food' }, 
+            spicyLevel: { type: String },  
+            addOnItem: { type: mongoose.Schema.Types.ObjectId, ref: 'food' },
+            drinkItem: { type: mongoose.Schema.Types.ObjectId, ref: 'food' }
+        }],
     },
     isVerified: { type: Boolean, default: false },
     verificationToken: String,
