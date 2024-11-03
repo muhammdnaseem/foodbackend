@@ -169,7 +169,7 @@ const forgotPassword = async (req, res) => {
 
         await user.save();
 
-        const resetUrl = `http://localhost:5173/resetpassword?token=${resetToken}`;
+        const resetUrl = `${process.env.FRONTEND_URL}/resetpassword?token=${resetToken}`;
         await sendVerificationEmail(email, resetToken, true);
 
         res.status(200).json({ success: true, message: 'Reset link sent to your email!' });
@@ -286,7 +286,7 @@ const userUpdate = async (req, res) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: 'http://localhost:4000/auth/google/callback',
+    callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
   },
   async (accessToken, refreshToken, profile, cb) => {
     try {
