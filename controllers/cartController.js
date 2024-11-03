@@ -15,12 +15,14 @@ const addToCart = async (req, res) => {
         let cartData = userData.cartData || { items: [] };
 
         // Retrieve new item details from newItem object
-        const { itemId, selectedSize, price, extraItem, spicyLevel, addOnItem, drinkItem, specialInstructions } = newItem || {};
+        const { itemId, selectedSize, price, extraItem, spicyLevel, addOnItem, drinkItem, specialInstructions, itemQuantity } = newItem || {};
 
         // Validate itemId and selectedSize
-        if (!itemId || !selectedSize) {
-            console.error('Invalid itemId or selectedSize:', { itemId, selectedSize });
-            return res.status(400).json({ success: false, message: 'Invalid itemId or selectedSize' });
+        if (!itemId) {
+            return res.status(400).json({ success: false, message: 'Invalid itemId' });
+        }
+        if (!selectedSize) {
+            return res.status(400).json({ success: false, message: 'Invalid selectedSize' });
         }
 
         // Check if an existing item with the same itemId and selectedSize already exists
@@ -29,20 +31,18 @@ const addToCart = async (req, res) => {
         );
 
         if (existingItemIndex !== -1) {
-            // If item exists with the same size, update its quantity and details
-            cartData.items[existingItemIndex].itemQuantity += 1; // Increment quantity
-            cartData.items[existingItemIndex].price = price; // Update price
-            cartData.items[existingItemIndex].extraItem = extraItem; // Update extra item
-            cartData.items[existingItemIndex].spicyLevel = spicyLevel; // Update spicy level
-            cartData.items[existingItemIndex].addOnItem = addOnItem; // Update add-on item
-            cartData.items[existingItemIndex].drinkItem = drinkItem; // Update drink item
-            cartData.items[existingItemIndex].specialInstructions = specialInstructions; // Update special instructions
+         // If item exists, update only the quantity
+    await userModel.updateOne(
+        { _id: userId, "cartData.items.itemId": itemId },
+        { $set: { "cartData.items.$.itemQuantity": itemQuantity }}
+    );
+    return res.json({ success: true, message: 'Quantity updated' });
         } else {
-            // If item doesn't exist or the size is different, create a new entry
+            // If item doesn't exist, create a new entry
             const newItemEntry = {
                 itemId,
                 price,
-                itemQuantity: 1,
+                itemQuantity,
                 selectedSize,
                 extraItem,
                 spicyLevel,
@@ -51,17 +51,16 @@ const addToCart = async (req, res) => {
                 specialInstructions,
             };
             cartData.items.push(newItemEntry); // Add the new item to the cart
+            // Update user's cart data in the database
+            await userModel.findByIdAndUpdate(userId, { cartData }, { new: true });
+            return res.json({ success: true, message: 'Added to cart' });
         }
-
-        // Update user's cart data in the database
-        await userModel.findByIdAndUpdate(userId, { cartData }, { new: true });
-
-        res.json({ success: true, message: 'Added to cart' });
     } catch (error) {
         console.error('Error adding to cart:', error);
         res.status(500).json({ success: false, message: 'Error adding to cart' });
     }
 };
+
 
 
 
