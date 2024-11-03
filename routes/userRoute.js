@@ -103,22 +103,38 @@ userRouter.get('/auth/facebook/callback', async (req, res) => {
 
   try {
     // Exchange authorization code for access token
-    const { data } = await axios.get(`https://graph.facebook.com/v13.0/oauth/access_token?client_id=${APP_ID}&client_secret=${APP_SECRET}&code=${code}&redirect_uri=${REDIRECT_URI}`);
+    const { data } = await axios.get(`https://graph.facebook.com/v13.0/oauth/access_token?client_id=${APP_ID}&client_secret=${APP_SECRET}&code=${code}&redirect_uri=${REDIRECT_URIF}`);
 
     const { access_token } = data;
 
     // Use access_token to fetch user profile
-    const { data: profile } = await axios.get(`https://graph.facebook.com/v13.0/me?fields=name,email&access_token=${access_token}`);
+    const { data: profile } = await axios.get(`https://graph.facebook.com/v13.0/me?fields=id,name,email,picture&access_token=${access_token}`);
 
-    // Code to handle user authentication and retrieval using the profile data
+    // Check if the user already exists in the database
+    let existingUser = await userModel.findOne({ facebookId: profile.id });
 
-    res.redirect('/');
+    if (!existingUser) {
+      // Create a new user
+      existingUser = new userModel({
+        facebookId: profile.id, // Store Facebook ID
+        email: profile.email,
+        name: profile.name,
+        picture: profile.picture.data.url, // Make sure to get the correct URL from the profile data
+      });
+      await existingUser.save();
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+
+    // Redirect to the frontend with the token
+    const frontendUrl = `https://hennbun.ca/auth/google/callback?token=${token}`;
+    res.redirect(frontendUrl);
   } catch (error) {
-    console.error('Error:', error.response.data.error);
+    console.error('Error:', error.response ? error.response.data.error : error.message);
     res.redirect('/login');
   }
 });
-
 
 
 userRouter.post('/sendEmail', sendDirectVerificationEmail);

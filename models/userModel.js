@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     mobile: { type: String },
     password: { type: String },
-    googleId: { type: String }, 
+    googleId: { type: String,  unique: true }, 
+    facebookId: { type: String, unique: true },
     cartData: {
         items: [{
             itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'food', required: true }, 

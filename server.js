@@ -21,15 +21,9 @@ app.use(cors());
 
 
 // Configure connection options
-const connectionOptions = {
-   // useNewUrlParser: true, // Use the new URL parser
-  //  useUnifiedTopology: true, // Use the new server discovery and monitoring engine
-  serverSelectionTimeoutMS: 60000, // 30 seconds timeout for MongoDB server selection
-  connectTimeoutMS: 80000, // 30 seconds connection timeout
-  socketTimeoutMS: 95000, // 45 seconds for socket timeout
-};
+
 // DB Connection
-mongoose.connect(process.env.MONGO_URL, connectionOptions)
+mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.log('NOT CONNECTED TO NETWORK', err));
 
