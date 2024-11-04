@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     mobile: { type: String },
     password: { type: String },
-    googleId: { type: String, sparse: true }, // Adding sparse indexing
+    googleId: { type: String }, // Adding sparse indexing
     facebookId: { type: String, sparse: true }, // Adding sparse indexing
     cartData: {
         items: [{
