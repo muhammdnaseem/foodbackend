@@ -10,10 +10,10 @@ const userSchema = new mongoose.Schema({
     facebookId: { type: String },
     cartData: {
         items: [{
-            itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'food', required: true }, 
-            selectedSize: { type: String, required: true }, 
-            itemQuantity: {type: Number, required: true},
-            price: {type: Number, required: true},      
+            itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'food', }, 
+            selectedSize: { type: String,  }, 
+            itemQuantity: {type: Number, },
+            price: {type: Number,},      
             extraItem: { type: mongoose.Schema.Types.ObjectId, ref: 'food' }, 
             spicyLevel: { type: String },  
             addOnItem: { type: mongoose.Schema.Types.ObjectId, ref: 'food' },
