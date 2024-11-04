@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
     mobile: { type: String },
     password: { type: String },
     googleId: { type: String }, // Adding sparse indexing
-    facebookId: { type: String, sparse: true }, // Adding sparse indexing
+    facebookId: { type: String }, // Adding sparse indexing
     cartData: {
         items: [{
             itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'food', }, 
