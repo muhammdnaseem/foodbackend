@@ -87,29 +87,37 @@ await user.save();
 };
 
 
+// Function to handle email verification with a new user model instance
 const sendDirectVerificationEmail = async (req, res) => {
     const { email } = req.body;
-     
-     if (await userModel.findOne({ email })) {
+
+    // Check if the user already exists
+    if (await userModel.findOne({ email })) {
         return res.status(409).json({ success: false, message: 'User already exists' });
     }
+
+    // Validate email presence
     if (!email) {
         return res.status(400).json({ success: false, message: 'Email is required' });
     }
-    const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString(); 
-    const verificationToken = generateOTP(); // Generate the OTP
 
-    // Create new user
+    const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationToken = generateOTP();
+
+    // Create new user without googleId field if it's not applicable
     const newUser = new userModel({
         email,
         verificationToken,
         verificationTokenExpiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
-    await newUser.save();
 
-  
+    try {
+        await newUser.save();
         await sendVerificationEmail(email, verificationToken);
-    
+        res.status(200).json({ success: true, message: 'Verification email sent.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error sending verification email', error });
+    }
 };
 
 
