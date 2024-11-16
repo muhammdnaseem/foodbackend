@@ -8,6 +8,7 @@ cartRouter.post("/add", authMiddleware, addToCart)
 cartRouter.post("/remove",authMiddleware, removeFromCart)
 cartRouter.post("/update",authMiddleware, updateCart)
 cartRouter.get("/get",authMiddleware, getCart)
+
 cartRouter.delete("/delete",authMiddleware, deleteItemFromCart)
 
 
