@@ -85,13 +85,10 @@ const existingItemIndex = cartData.items.findIndex(
 
 
 
-
-
-
 const removeFromCart = async (req, res) => {
     try {
-        const { userId, itemId } = req.body;
-        
+        const { userId, itemId, selectedSize } = req.body;
+
         let userData = await userModel.findById(userId);
         
         if (!userData) {
@@ -100,14 +97,18 @@ const removeFromCart = async (req, res) => {
 
         let cartData = userData.cartData || { items: {}, selectedSizes: {} };
 
-        // Build the key for the cart item
-        const itemKey = `${itemId}-${cartData.selectedSizes[itemId]}`;
+        // Debug: Check the current state of cartData
+        console.log("Current cart data:", cartData);
 
-        // Check if the item exists in the cart
+        // Ensure selectedSize exists for the itemId
+        if (!cartData.selectedSizes[itemId]) {
+            return res.status(400).json({ success: false, message: 'Item size not found in cart' });
+        }
+
+        const itemKey = `${itemId}-${cartData.selectedSizes[itemId]}`;
         if (cartData.items[itemKey]) {
             cartData.items[itemKey] -= 1;
 
-            // If quantity is zero or less, remove the item from the cart
             if (cartData.items[itemKey] <= 0) {
                 delete cartData.items[itemKey];
                 delete cartData.selectedSizes[itemId];
@@ -120,12 +121,12 @@ const removeFromCart = async (req, res) => {
 
         res.json({ success: true, message: 'Removed from cart' });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ success: false, message: 'Error removing from cart' });
+        console.error("Error in removeFromCart:", error);
+        res.status(500).json({ success: false, message: 'Error removing from cart', error: error.message });
     }
 };
 
-// update items to user cart
+
 // Update items in user cart when size is changed
 const updateCart = async (req, res) => {
     try {
@@ -169,7 +170,48 @@ const updateCart = async (req, res) => {
     }
 };
 
+// Delete Item from Cart API
+const deleteItemFromCart = async (req, res) => {
+    try {
+        const { userId, itemId, selectedSize } = req.body; // Extract userId, itemId, and selectedSize from request body
 
+        // Validate the presence of userId and itemId
+        if (!userId || !itemId || !selectedSize) {
+            return res.status(400).json({ success: false, message: 'Invalid userId, itemId, or selectedSize' });
+        }
+
+        // Find the user by their ID
+        const userData = await userModel.findById(userId);
+        if (!userData) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        // Access user's cartData or initialize if empty
+        let cartData = userData.cartData || { items: {}, selectedSizes: {} };
+
+        // Construct the item key based on itemId and selectedSize
+        const itemKey = `${itemId}-${selectedSize}`;
+
+        // Check if the item exists in the cart
+        if (cartData.items[itemKey]) {
+            // Remove the item from the cart
+            delete cartData.items[itemKey];
+            delete cartData.selectedSizes[itemKey]; // Remove selected size if it exists
+        } else {
+            return res.status(400).json({ success: false, message: 'Item not found in cart' });
+        }
+
+        // Update the user's cart data in the database
+        await userModel.findByIdAndUpdate(userId, { cartData }, { new: true });
+
+        // Respond with a success message
+        res.json({ success: true, message: 'Item deleted from cart' });
+    } catch (error) {
+        // Handle errors
+        console.error('Error deleting item from cart:', error);
+        res.status(500).json({ success: false, message: 'Error deleting item from cart', error: error.message });
+    }
+};
 
 
 // fetch user cart data
@@ -222,4 +264,7 @@ const getCart = async (req, res) => {
 
 
 
-export {addToCart, removeFromCart, getCart, updateCart}
+
+
+
+export {addToCart, removeFromCart, getCart, updateCart, deleteItemFromCart}

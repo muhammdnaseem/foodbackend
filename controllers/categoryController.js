@@ -5,7 +5,8 @@ import categoryModel from '../models/categoryModel.js'
 
 const addCategory = async (req,res) =>{
 
-    let image_filename = `${req.file.filename}`;
+   // let image_filename = `${req.file.filename}`;
+    let image_filename = "file.png";
 
     const category = new categoryModel({
         categoryname: req.body.categoryname,

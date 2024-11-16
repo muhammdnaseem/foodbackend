@@ -144,7 +144,7 @@ userRouter.post('/sendEmail', sendDirectVerificationEmail);
 
 // Forgot and Reset Password
 userRouter.post('/forgotpassword', forgotPassword);
-userRouter.post('/resetpassword', resetPassword);
+userRouter.patch('/resetpassword', resetPassword);
 
 // User details and profile update
 userRouter.get('/details', authMiddleware, userDetails); // Changed to GET for user details retrieval

@@ -2,18 +2,15 @@ import fs from 'fs'
 import foodModel from '../models/foodModel.js'
 import mongoose from 'mongoose';
 //add food item
-
 const addFood = async (req, res) => {
-    let image_filename = `${req.file.filename}`;
+    //let image_filename = `${req.file.filename}`;
+    let image_filename = "file.png";
+    console.log(req.body);
 
-    // Parse sizes from the request body
-    let sizes = [];
-    if (req.body.sizes) {
-        try {
-            sizes = JSON.parse(req.body.sizes);
-        } catch (error) {
-            return res.status(400).json({ success: false, message: 'Invalid sizes format' });
-        }
+    // Validate sizes if passed
+    let sizes = req.body.sizes;
+    if (sizes && !Array.isArray(sizes)) {
+        return res.status(400).json({ success: false, message: 'Invalid sizes format' });
     }
 
     // Validate category
@@ -24,7 +21,7 @@ const addFood = async (req, res) => {
     const food = new foodModel({
         name: req.body.name,
         description: req.body.description,
-        sizes: sizes.length > 0 ? sizes : [{ size: 'Regular', price: req.body.price }],
+        sizes: sizes && sizes.length > 0 ? sizes : [{ size: 'Regular', price: req.body.price }],
         category: req.body.category,
         image: image_filename
     });

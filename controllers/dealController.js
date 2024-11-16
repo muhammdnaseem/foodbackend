@@ -16,6 +16,8 @@ const addDeal = async (req,res) =>{
         dealtime: req.body.dealtime,
     })
 
+    console.log(deal);
+
     try {
         await deal.save();
         res.json({success:true,message:'Deal Of the day Added'})

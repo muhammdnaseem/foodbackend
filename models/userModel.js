@@ -1,21 +1,20 @@
 import mongoose from "mongoose";
 
-// Define the user schema
 const userSchema = new mongoose.Schema({
     name: { type: String },
     email: { type: String, required: true, unique: true },
     mobile: { type: String },
     password: { type: String },
-    googleId: { type: String, sparse: true }, // Adding sparse indexing
-    facebookId: { type: String, sparse: true }, // Adding sparse indexing
+    googleId: { type: String, sparse: true }, // Google ID can be null but will not conflict due to sparse index
+    facebookId: { type: String, sparse: true }, // Facebook ID can also be null
     cartData: {
         items: [{
-            itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'food' }, 
-            selectedSize: { type: String }, 
+            itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'food' },
+            selectedSize: { type: String },
             itemQuantity: { type: Number },
-            price: { type: Number },      
-            extraItem: { type: mongoose.Schema.Types.ObjectId, ref: 'food' }, 
-            spicyLevel: { type: String },  
+            price: { type: Number },
+            extraItem: { type: mongoose.Schema.Types.ObjectId, ref: 'food' },
+            spicyLevel: { type: String },
             addOnItem: { type: mongoose.Schema.Types.ObjectId, ref: 'food' },
             drinkItem: { type: mongoose.Schema.Types.ObjectId, ref: 'food' },
             specialInstructions: { type: String },
@@ -32,7 +31,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
 userSchema.index({ facebookId: 1 }, { unique: true, sparse: true });
 
-// Export the model safely (only register if not already registered)
+// Export the model safely
 const userModel = mongoose.models.user || mongoose.model('user', userSchema);
 
 export default userModel;

@@ -19,7 +19,6 @@ const port = process.env.PORT || 4000;  // Define the port properly
 app.use(express.json());
 app.use(cors());
 
-
 // Configure connection options
 
 // DB Connection

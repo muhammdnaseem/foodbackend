@@ -45,25 +45,25 @@ const registerUser = async (req, res) => {
         // Find the user by email
         const user = await userModel.findOne({ email });
         if (!validator.isEmail(email)) return res.status(400).json({ success: false, message: 'Invalid email' });
-        if (password.length < 8) return res.status(400).json({ success: false, message: 'Password too short' });
+        // if (password.length < ) return res.status(400).json({ success: false, message: 'Password too short' });
 
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
    
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
+        // if (!user) {
+        //     return res.status(404).json({ success: false, message: 'User not found' });
+        // }
 
         // Check if the OTP is correct and has not expired
-        if (user.verificationToken !== otp) {
-            return res.status(400).json({ success: false, message: 'Invalid OTP' });
-        }
+        // if (user.verificationToken !== otp) {
+        //     return res.status(400).json({ success: false, message: 'Invalid OTP' });
+        // }
 
         // Check if the verification token has expired
-        if (user.verificationTokenExpiresAt < Date.now()) {
-            return res.status(400).json({ success: false, message: 'OTP has expired' });
-        }
+        // if (user.verificationTokenExpiresAt < Date.now()) {
+        //     return res.status(400).json({ success: false, message: 'OTP has expired' });
+        // }
         
        
 
