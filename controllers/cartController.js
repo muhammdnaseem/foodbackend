@@ -170,44 +170,44 @@ const updateCart = async (req, res) => {
     }
 };
 
-// Delete Item from Cart API
 const deleteItemFromCart = async (req, res) => {
     try {
-        const { userId, itemId, selectedSize } = req.body; // Extract userId, itemId, and selectedSize from request body
+        const { userId, itemId, selectedSize } = req.body;
 
-        // Validate the presence of userId and itemId
+        console.log('kkk', itemId, selectedSize, userId);
+
         if (!userId || !itemId || !selectedSize) {
             return res.status(400).json({ success: false, message: 'Invalid userId, itemId, or selectedSize' });
         }
 
-        // Find the user by their ID
         const userData = await userModel.findById(userId);
         if (!userData) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // Access user's cartData or initialize if empty
-        let cartData = userData.cartData || { items: {}, selectedSizes: {} };
+        let cartItems = userData.cartData?.items || [];
+        console.log('cart data', cartItems);
 
-        // Construct the item key based on itemId and selectedSize
-        const itemKey = `${itemId}-${selectedSize}`;
+        // Find the index of the item to delete
+        const itemIndex = cartItems.findIndex(
+            (item) =>
+                item.itemId.toString() === itemId && // Compare itemId
+                item.selectedSize.toLowerCase() === selectedSize.toLowerCase() // Case-insensitive comparison for selectedSize
+        );
 
-        // Check if the item exists in the cart
-        if (cartData.items[itemKey]) {
-            // Remove the item from the cart
-            delete cartData.items[itemKey];
-            delete cartData.selectedSizes[itemKey]; // Remove selected size if it exists
-        } else {
+        if (itemIndex === -1) {
             return res.status(400).json({ success: false, message: 'Item not found in cart' });
         }
 
-        // Update the user's cart data in the database
-        await userModel.findByIdAndUpdate(userId, { cartData }, { new: true });
+        // Remove the item from the array
+        cartItems.splice(itemIndex, 1);
 
-        // Respond with a success message
+        // Update the user's cart data
+        userData.cartData.items = cartItems;
+        await userData.save();
+
         res.json({ success: true, message: 'Item deleted from cart' });
     } catch (error) {
-        // Handle errors
         console.error('Error deleting item from cart:', error);
         res.status(500).json({ success: false, message: 'Error deleting item from cart', error: error.message });
     }
@@ -216,10 +216,13 @@ const deleteItemFromCart = async (req, res) => {
 
 // fetch user cart data
 const getCart = async (req, res) => {
+  
     try {
+        
         const userData = await userModel.findById(req.body.userId);
+        
         const cartData = userData.cartData;
-
+        
         // Initialize transformed cart items
         const transformedItems = {};
         const transformedSizes = {};
@@ -249,10 +252,13 @@ const getCart = async (req, res) => {
         }
 
         // Structure the final cart data
+
         const finalCartData = {
             items: transformedItems,
             selectedSizes: transformedSizes,
         };
+
+        // console.log('user data ', finalCartData);
 
         
         res.json({ success: true, cartData: finalCartData });
