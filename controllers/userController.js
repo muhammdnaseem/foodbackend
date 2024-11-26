@@ -113,7 +113,8 @@ const sendDirectVerificationEmail = async (req, res) => {
 
     try {
         await newUser.save();
-        await sendVerificationEmail(email, verificationToken);
+        const isPasswordReset = false;
+        await sendVerificationEmail(email, verificationToken, isPasswordReset);
         res.status(200).json({ success: true, message: 'Verification email sent.' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error sending verification email', error });
@@ -136,7 +137,8 @@ const forgotPassword = async (req, res) => {
         await user.save();
 
         const resetUrl = `${process.env.FRONTEND_URL}/resetpassword?token=${resetToken}`;
-        await sendVerificationEmail(email, resetToken, true);
+        const isPasswordReset = true;
+        await sendVerificationEmail(email, resetToken, isPasswordReset);
 
         res.status(200).json({ success: true, message: 'Reset link sent to your email!' });
     } catch (error) {
@@ -168,7 +170,7 @@ const sendVerificationEmail = async (email, verificationToken, isPasswordReset) 
             subject = 'Password Reset';
             text = `Please reset your password by clicking the following link: ${verificationUrl}`;
             html = `<p> <a href="${verificationUrl}">${verificationUrl}</a></p>`;
-        } else {
+        } else if (isPasswordReset = false) {
             // For OTP verification, send just the OTP in text
             subject = 'Email Verification - OTP';
             text = `Your OTP for email verification is: ${verificationToken}`;
