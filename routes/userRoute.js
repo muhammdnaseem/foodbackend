@@ -28,6 +28,8 @@ userRouter.post('/verify-token', VerifyToken);
 
 
 
+
+
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const REDIRECT_URI = `https://foodbackend-production-a94c.up.railway.app/api/user/auth/google/callback`;
@@ -71,7 +73,7 @@ userRouter.get('/auth/google/callback', async (req, res) => {
       await existingUser.save();
     }
 
-    // Generate a JWT token
+    
     
     // Generate a JWT token
     const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
@@ -81,8 +83,10 @@ userRouter.get('/auth/google/callback', async (req, res) => {
     res.redirect(frontendUrl);
   } catch (error) {
     const errorMessage = error.response && error.response.data ? error.response.data.error : error.message;
+
     console.error('Error:', errorMessage);
-    res.redirect('/login');
+    const frontendUrl = `${process.env.FRONTEND_URL}/auth/google/callback?token=${token}`;
+    res.redirect(frontendUrl);
   }
 });
 

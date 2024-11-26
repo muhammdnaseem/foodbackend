@@ -324,7 +324,8 @@ passport.use(new GoogleStrategy({
       console.log("JWT token created:", token); // Log the generated token
 
       // Return the user and token directly to stop redirection for debugging
-      cb(null, { user, token });
+      res.status(200).json({ success: true, message: 'Login successful', token });
+      //cb(null, { user, token });
     } catch (err) {
       console.error("Error during Google authentication:", err); // Log any errors that occur
       cb(err, null); // Pass error to cb function as expected
