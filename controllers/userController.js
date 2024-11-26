@@ -36,6 +36,7 @@ const loginUser = async (req, res) => {
 
 
 // Register user
+// Register user
 const registerUser = async (req, res) => {
     const { name, password, email, otp } = req.body;
 
@@ -163,49 +164,6 @@ const sendVerificationEmail = async (email, verificationToken, isPasswordReset =
     }
 };
 
-// Send verification email
-const sendResetVerificationEmail = async (email, verificationToken, isPasswordReset = true) => {
-    const verificationUrl = `${process.env.FRONTEND_URL}/reset-password?resettoken=${verificationToken}`;
-    try {
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD,
-            },
-        });
-
-        let subject, text, html;
-
-        if (isPasswordReset) {
-            // For password reset, send the link
-            subject = 'Password Reset';
-            text = `Please reset your password by clicking the following link: ${verificationUrl}`;
-            html = `<p> <a href="${verificationUrl}">${verificationUrl}</a></p>`;
-        } else {
-            // For OTP verification, send just the OTP in text
-            subject = 'Email Verification - OTP';
-            text = `Your OTP for email verification is: ${verificationToken}`;
-            html = `<p> <strong>${verificationToken}</strong></p>`;
-        }
-
-        const mailOptions = {
-            from: `"Henn Bun" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject,
-            text,
-            html,
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log('Verification email sent successfully');
-    } catch (error) {
-        console.error('Error sending verification email:', error);
-    }
-};
-
 // Forgot password
 const forgotPassword = async (req, res) => {
     const { email } = req.body;
@@ -220,7 +178,7 @@ const forgotPassword = async (req, res) => {
         await user.save();
 
         const resetUrl = `${process.env.FRONTEND_URL}/resetpassword?token=${resetToken}`;
-        await sendResetVerificationEmail(email, resetToken);
+        await sendVerificationEmail(email, resetToken, true);
 
         res.status(200).json({ success: true, message: 'Reset link sent to your email!' });
     } catch (error) {
@@ -366,7 +324,7 @@ passport.use(new GoogleStrategy({
       console.log("JWT token created:", token); // Log the generated token
 
       // Return the user and token directly to stop redirection for debugging
-      res.status(200).json({ success: true, message: 'Login successful', token });
+       res.status(200).json({ success: true, message: 'Login successful', token });
       //cb(null, { user, token });
     } catch (err) {
       console.error("Error during Google authentication:", err); // Log any errors that occur
