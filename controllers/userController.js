@@ -136,9 +136,9 @@ const forgotPassword = async (req, res) => {
 
         await user.save();
 
-        const resetUrl = `${process.env.FRONTEND_URL}/resetpassword?token=${resetToken}`;
-        const isPasswordReset = "true";
-        await sendVerificationEmail(email, resetToken, isPasswordReset);
+       
+        
+        await sendResetVerificationEmail(email, resetToken);
 
         res.status(200).json({ success: true, message: 'Reset link sent to your email!' });
     } catch (error) {
@@ -150,9 +150,8 @@ const forgotPassword = async (req, res) => {
 
 
 // Send verification email
-const sendVerificationEmail = async (email, verificationToken, isPasswordReset) => {
-    const verificationUrl = `${process.env.FRONTEND_URL}/reset-password?resettoken=${verificationToken}`;
-    try {
+const sendVerificationEmail = async (email, verificationToken) => {
+      try {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 587,
@@ -165,17 +164,12 @@ const sendVerificationEmail = async (email, verificationToken, isPasswordReset) 
 
         let subject, text, html;
 
-        if (isPasswordReset === "true") {
-            // For password reset, send the link
-            subject = 'Password Reset';
-            text = `Please reset your password by clicking the following link: ${verificationUrl}`;
-            html = `<p> <a href="${verificationUrl}">${verificationUrl}</a></p>`;
-        } else if (isPasswordReset === "false") {
+        
             // For OTP verification, send just the OTP in text
             subject = 'Email Verification - OTP';
             text = `Your OTP for email verification is: ${verificationToken}`;
             html = `<p> <strong>${verificationToken}</strong></p>`;
-        }
+      
 
         const mailOptions = {
             from: `"Henn Bun" <${process.env.EMAIL_USER}>`,
@@ -191,6 +185,47 @@ const sendVerificationEmail = async (email, verificationToken, isPasswordReset) 
         console.error('Error sending verification email:', error);
     }
 };
+
+
+const sendResetVerificationEmail = async (email, verificationToken) => {
+    const verificationUrl = `${process.env.FRONTEND_URL}/reset-password?resettoken=${verificationToken}`;
+    try {
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD,
+            },
+        });
+
+        let subject, text, html;
+
+        
+            // For password reset, send the link
+            subject = 'Password Reset';
+            text = `Please reset your password by clicking the following link: ${verificationUrl}`;
+            html = `<p> <a href="${verificationUrl}">${verificationUrl}</a></p>`;
+       
+          
+
+        const mailOptions = {
+            from: `"Henn Bun" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject,
+            text,
+            html,
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log('Verification email sent successfully');
+    } catch (error) {
+        console.error('Error sending verification email:', error);
+    }
+};
+
+
 
 const VerifyToken = async (req, res) => {
     const { resettoken } = req.body;
