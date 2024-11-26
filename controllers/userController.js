@@ -36,7 +36,6 @@ const loginUser = async (req, res) => {
 
 
 // Register user
-// Register user
 const registerUser = async (req, res) => {
     const { name, password, email, otp } = req.body;
 
@@ -113,7 +112,7 @@ const sendDirectVerificationEmail = async (req, res) => {
 
     try {
         await newUser.save();
-        await sendVerificationEmail(email, verificationToken);
+        await sendVerificationEmail(email, verificationToken, false);
         res.status(200).json({ success: true, message: 'Verification email sent.' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error sending verification email', error });
@@ -122,7 +121,7 @@ const sendDirectVerificationEmail = async (req, res) => {
 
 
 // Send verification email
-const sendVerificationEmail = async (email, verificationToken, isPasswordReset = false) => {
+const sendVerificationEmail = async (email, verificationToken, isPasswordReset) => {
     const verificationUrl = `${process.env.FRONTEND_URL}/reset-password?resettoken=${verificationToken}`;
     try {
         const transporter = nodemailer.createTransport({
