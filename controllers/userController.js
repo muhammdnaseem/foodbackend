@@ -113,7 +113,7 @@ const sendDirectVerificationEmail = async (req, res) => {
 
     try {
         await newUser.save();
-        await sendVerificationEmail(email, verificationToken);
+        await sendVerificationEmail(email, verificationToken, false);
         res.status(200).json({ success: true, message: 'Verification email sent.' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error sending verification email', error });
@@ -121,8 +121,34 @@ const sendDirectVerificationEmail = async (req, res) => {
 };
 
 
+
+// Forgot password
+const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await userModel.findOne({ email });
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpiresAt = Date.now() + 3600000; // 1 hour
+
+        await user.save();
+
+        const resetUrl = `${process.env.FRONTEND_URL}/resetpassword?token=${resetToken}`;
+        await sendVerificationEmail(email, resetToken, true);
+
+        res.status(200).json({ success: true, message: 'Reset link sent to your email!' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Error processing request' });
+    }
+};
+
+
+
 // Send verification email
-const sendVerificationEmail = async (email, verificationToken, isPasswordReset = false) => {
+const sendVerificationEmail = async (email, verificationToken, isPasswordReset) => {
     const verificationUrl = `${process.env.FRONTEND_URL}/reset-password?resettoken=${verificationToken}`;
     try {
         const transporter = nodemailer.createTransport({
@@ -163,30 +189,6 @@ const sendVerificationEmail = async (email, verificationToken, isPasswordReset =
         console.error('Error sending verification email:', error);
     }
 };
-
-// Forgot password
-const forgotPassword = async (req, res) => {
-    const { email } = req.body;
-    try {
-        const user = await userModel.findOne({ email });
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        user.resetPasswordToken = resetToken;
-        user.resetPasswordExpiresAt = Date.now() + 3600000; // 1 hour
-
-        await user.save();
-
-        const resetUrl = `${process.env.FRONTEND_URL}/resetpassword?token=${resetToken}`;
-        await sendVerificationEmail(email, resetToken, true);
-
-        res.status(200).json({ success: true, message: 'Reset link sent to your email!' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, message: 'Error processing request' });
-    }
-};
-
 
 const VerifyToken = async (req, res) => {
     const { resettoken } = req.body;

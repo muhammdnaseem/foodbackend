@@ -141,10 +141,9 @@ userRouter.get('/auth/facebook/callback', async (req, res) => {
 });
 
 
+
+
 userRouter.post('/sendEmail', sendDirectVerificationEmail);
-
-
-
 
 // Forgot and Reset Password
 userRouter.post('/forgotpassword', forgotPassword);
