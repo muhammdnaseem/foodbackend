@@ -113,7 +113,7 @@ const sendDirectVerificationEmail = async (req, res) => {
 
     try {
         await newUser.save();
-        await sendVerificationEmail(email, verificationToken, false);
+        await sendVerificationEmail(email, verificationToken);
         res.status(200).json({ success: true, message: 'Verification email sent.' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error sending verification email', error });
@@ -163,7 +163,7 @@ const sendVerificationEmail = async (email, verificationToken, isPasswordReset) 
 
         let subject, text, html;
 
-        if (isPasswordReset) {
+        if (isPasswordReset = true) {
             // For password reset, send the link
             subject = 'Password Reset';
             text = `Please reset your password by clicking the following link: ${verificationUrl}`;
@@ -326,7 +326,6 @@ passport.use(new GoogleStrategy({
       console.log("JWT token created:", token); // Log the generated token
 
       // Return the user and token directly to stop redirection for debugging
-       res.status(200).json({ success: true, message: 'Login successful', token });
       //cb(null, { user, token });
     } catch (err) {
       console.error("Error during Google authentication:", err); // Log any errors that occur
