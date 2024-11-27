@@ -4,6 +4,7 @@ const addToCart = async (req, res) => {
     try {
         const { userId, newItem } = req.body; // Get userId and newItem from the request body
 
+
         // Validate userId
         if (!userId) {
             return res.status(400).json({ success: false, message: 'Invalid userId' });
@@ -18,6 +19,7 @@ const addToCart = async (req, res) => {
 
         // Initialize cartData if not present
         let cartData = userData.cartData || { items: [] };
+       
 
         // Retrieve new item details from newItem object
         const { 
@@ -40,7 +42,7 @@ const addToCart = async (req, res) => {
             });
         }
 
-        // Check if an existing item with the same itemId and selectedSize already exists
+      
         // Check if an existing item with the same itemId and selectedSize already exists
 const existingItemIndex = cartData.items.findIndex(
     (item) => item.itemId && item.itemId.toString() === itemId.toString() && item.selectedSize === selectedSize
@@ -50,10 +52,24 @@ const existingItemIndex = cartData.items.findIndex(
 
         if (existingItemIndex !== -1) {
             // If item exists, update only the quantity
+            //console.log('cart data are ', itemId, itemQuantity);
             await userModel.updateOne(
-                { _id: userId, "cartData.items.itemId": itemId, "cartData.items.selectedSize": selectedSize },
-                { $set: { "cartData.items.$.itemQuantity": itemQuantity }}
+                { _id: userId }, // Match the user
+                {
+                    $set: { "cartData.items.$[item].itemQuantity": itemQuantity },
+                },
+                {
+                    arrayFilters: [
+                        { 
+                            "item.itemId": itemId, 
+                            "item.selectedSize": selectedSize 
+                        },
+                    ],
+                }
             );
+            
+         
+            //console.log('cart data are ', cartData);
             return res.json({ success: true, message: 'Quantity updated' });
            
         } else {

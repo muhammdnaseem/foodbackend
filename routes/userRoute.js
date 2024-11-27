@@ -14,7 +14,9 @@ import {
     userUpdate,
     forgotPassword,
     resetPassword,
-    VerifyToken
+    VerifyToken,
+    updatePassword,
+    sendFranchiseEmail
 } from '../controllers/userController.js';
 import authMiddleware from './../middleware/auth.js';
 import passport from 'passport';
@@ -25,6 +27,7 @@ const userRouter = express.Router();
 userRouter.post('/register', registerUser);
 userRouter.post('/login', loginUser);
 userRouter.post('/verify-token', VerifyToken);
+userRouter.post('/sendFranchiseEmail', sendFranchiseEmail);
 
 
 
@@ -147,10 +150,12 @@ userRouter.post('/sendEmail', sendDirectVerificationEmail);
 
 // Forgot and Reset Password
 userRouter.post('/forgotpassword', forgotPassword);
-userRouter.patch('/resetpassword', resetPassword);
+userRouter.put('/resetpassword', resetPassword);
 
 // User details and profile update
 userRouter.get('/details', authMiddleware, userDetails); // Changed to GET for user details retrieval
-userRouter.patch('/update', userUpdate);
+userRouter.put('/update', userUpdate);
+
+userRouter.put('/updatepassword', updatePassword);
 
 export default userRouter;

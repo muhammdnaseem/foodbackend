@@ -123,6 +123,48 @@ const sendDirectVerificationEmail = async (req, res) => {
 
 
 
+
+// Function to send franchise email
+const sendFranchiseEmail = async (req, res) => {
+    const { name, email, message } = req.body;
+
+    try {
+        await sendEmail(name, email, message);
+        res.status(200).json({ success: true, message: 'Franchise email sent successfully.' });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ success: false, message: 'Error sending email', error });
+    }
+};
+
+// Helper function to send the email
+const sendEmail = async (name, email, message) => {
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // Use TLS
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD,
+        },
+    });
+
+    const mailOptions = {
+        from: `"Henn Bun" <${process.env.EMAIL_USER}>`,
+        to: 'saidj4671@gmail.com',
+        subject: `Franchise Inquiry from ${name}`,
+        text: `You received a new message:\n\nName: ${name}\nEmail: ${email}\nMessage: ${message}`,
+        html: `
+            <p>You received a new franchise inquiry:</p>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Message:</strong> ${message}</p>
+        `,
+    };
+
+    await transporter.sendMail(mailOptions);
+};
+
 // Forgot password
 const forgotPassword = async (req, res) => {
     const { email } = req.body;
@@ -185,6 +227,7 @@ const sendVerificationEmail = async (email, verificationToken) => {
         console.error('Error sending verification email:', error);
     }
 };
+
 
 
 const sendResetVerificationEmail = async (email, verificationToken) => {
@@ -260,6 +303,8 @@ const VerifyToken = async (req, res) => {
 const resetPassword = async (req, res) => {
     const { userId, newPassword } = req.body;
 
+    console.log('new', newPassword, userId)
+
     try {
         // Find the user by ID
         const user = await userModel.findById(userId);
@@ -307,24 +352,56 @@ const userDetails = async (req, res) => {
 
 // Update user details
 const userUpdate = async (req, res) => {
-    const { userId, password, ...updatedData } = req.body; // Destructure password from request body
+    const { userId, ...updatedData } = req.body; // Destructure password from request body
+    
 
     try {
-        // Check if a new password is provided
-        if (password) {
-            const salt = await bcrypt.genSalt(10); // Generate a salt for hashing
-            updatedData.password = await bcrypt.hash(password, salt); // Hash the new password
-        }
-
+     
         const user = await userModel.findByIdAndUpdate(userId, updatedData, { new: true });
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-
-        // Exclude password from the response
-        const { password: _, ...userData } = user.toObject(); // Convert mongoose doc to plain object
-        res.status(200).json({ success: true, data: userData }); // Return updated user data without password
+//console.log('uuu', updatedData);
+        res.status(200).json({ success: true, message: 'User Data Updated' }); // Return updated user data without password
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Error updating user' });
+    }
+};
+
+// Update user password
+const updatePassword = async (req, res) => {
+    const { userId, currentpassword, newPassword } = req.body; // Destructure password details from request body
+
+    try {
+        // Validate required fields
+        console.log('ppp', currentpassword, newPassword);
+        if (!currentpassword || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Current password and new password are required' });
+        }
+
+        // Retrieve the user by ID
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        // Compare the provided current password with the stored hashed password
+        const isMatch = await bcrypt.compare(currentpassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: 'Current password is incorrect' });
+        }
+
+        // Hash the new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update the user's password
+        user.password = hashedPassword;
+        await user.save();
+
+        res.status(200).json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Error updating password' });
     }
 };
 
@@ -452,4 +529,6 @@ export {
     googleCallback,
     authFacebook,
     facebookCallback,
+    updatePassword,
+    sendFranchiseEmail
 };
