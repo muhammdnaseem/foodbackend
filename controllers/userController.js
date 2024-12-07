@@ -354,7 +354,7 @@ const userDetails = async (req, res) => {
 const userUpdate = async (req, res) => {
     const { userId, ...updatedData } = req.body; // Destructure password from request body
     
-
+            //console.log(';;;;;;', updatedData);
     try {
      
         const user = await userModel.findByIdAndUpdate(userId, updatedData, { new: true });

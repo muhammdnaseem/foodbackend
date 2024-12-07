@@ -4,6 +4,14 @@ const userSchema = new mongoose.Schema({
     name: { type: String },
     email: { type: String, required: true, unique: true },
     mobile: { type: String },
+    gender: { type: String },
+    dob: { type: String },
+    zip: { type: String },
+    street: { type: String },
+    address: { type: String },
+    city: { type: String },
+    state: { type: String },
+    
     password: { type: String },
     googleId: { type: String, sparse: true }, // Google ID can be null but will not conflict due to sparse index
     facebookId: { type: String, sparse: true }, // Facebook ID can also be null

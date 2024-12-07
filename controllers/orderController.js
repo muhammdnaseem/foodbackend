@@ -71,7 +71,14 @@ const placeOrder = async (req, res) => {
 
         // Create the Stripe session
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card', 'samsung_pay'],
+            payment_method_types: ['card', 'samsung_pay',
+                'bancontact',
+    'eps',
+    'giropay',
+    'ideal',
+    'p24',
+    'sepa_debit',
+            ],
             line_items: productItems,
             mode: 'payment',
             success_url: `${frontend_url}/success?orderId=${savedOrder._id}&session_id={CHECKOUT_SESSION_ID}`,
