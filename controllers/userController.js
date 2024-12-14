@@ -352,20 +352,31 @@ const userDetails = async (req, res) => {
 
 // Update user details
 const userUpdate = async (req, res) => {
-    const { userId, ...updatedData } = req.body; // Destructure password from request body
-    
-            //console.log(';;;;;;', updatedData);
+    const { userId, password, ...updatedData } = req.body; // Destructure password from request body
+
     try {
-     
+        // If a password is provided, hash it and include it in the update
+        if (password) {
+            const bcrypt = require('bcryptjs');
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            updatedData.password = hashedPassword;
+        }
+
+        // Update user data
         const user = await userModel.findByIdAndUpdate(userId, updatedData, { new: true });
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-//console.log('uuu', updatedData);
-        res.status(200).json({ success: true, message: 'User Data Updated' }); // Return updated user data without password
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.status(200).json({ success: true, message: 'User Data Updated' });
     } catch (error) {
-        console.error(error);
+        console.error('Error updating user:', error);
         res.status(500).json({ success: false, message: 'Error updating user' });
     }
 };
+
 
 // Update user password
 const updatePassword = async (req, res) => {
@@ -373,7 +384,7 @@ const updatePassword = async (req, res) => {
 
     try {
         // Validate required fields
-        console.log('ppp', currentpassword, newPassword);
+        //console.log('ppp', currentpassword, newPassword);
         if (!currentpassword || !newPassword) {
             return res.status(400).json({ success: false, message: 'Current password and new password are required' });
         }
